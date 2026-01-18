@@ -1,149 +1,121 @@
 'use client';
 
 import { useState } from 'react';
-import { products, Category, Product } from '@/data/products';
-import ProductCard from '@/components/ProductsCard';
-import EmailModal from '@/components/EmailModel';
-// 1. Updated Imports: Added 'MessageCircle' (for WhatsApp) and 'Instagram'
-import { Rocket, Layers, ChevronRight, Twitter, Instagram, MessageCircle } from 'lucide-react';
-
-const categories: Category[] = [
-  "Ebooks", "AI Prompt Packs", "Website Templates", "Lead Magnet Templates", "Online Courses"
-];
+import { products, Product } from '../data/products'; // Import data from Step 1
+import ProductCard from '@/components/ProductsCard'; // Ensure this path matches your folder structure
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<Category>("Ebooks");
+  // State for the Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product>(products[0]);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  
+  // State for the Form
+  const [email, setEmail] = useState('');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
-  const filteredProducts = products.filter(p => p.category === activeTab);
-
+  // When user clicks "Get Free" on a card
   const handlePreOrder = (product: Product) => {
     setSelectedProduct(product);
     setIsModalOpen(true);
+    setStatus('idle');
+    setEmail('');
+  };
+
+  // When user submits the email form
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus('loading');
+
+    try {
+      const response = await fetch('/api/presell', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          email: email, 
+          product: selectedProduct?.id // <--- SENDING THE ID (e.g., 'product-1')
+        }),
+      });
+
+      if (response.ok) {
+        setStatus('success');
+        setTimeout(() => setIsModalOpen(false), 3000); // Close after 3 seconds
+      } else {
+        setStatus('error');
+      }
+    } catch (error) {
+      setStatus('error');
+    }
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 selection:bg-indigo-500/30">
+    <main className="min-h-screen bg-slate-950 text-white p-8">
       
-      {/* Navbar */}
-      <header className="fixed top-0 w-full z-40 bg-slate-950/80 backdrop-blur-md border-b border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-            <div className="flex items-center gap-2 font-bold text-xl text-white">
-                <div className="w-8 h-8 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center">
-                    <Rocket size={18} className="text-white" />
-                </div>
-                DigitCastle
-            </div>
-            <a href="#products" className="text-sm font-medium hover:text-indigo-400 transition-colors">Browse Products</a>
-        </div>
-      </header>
+      {/* HEADER */}
+      <div className="max-w-7xl mx-auto mb-12 text-center">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-400 to-emerald-400 bg-clip-text text-transparent">
+          DigitCastle Free Resources
+        </h1>
+        <p className="text-slate-400 mt-4">Select a product below to get it sent to your inbox instantly.</p>
+      </div>
 
-      {/* Hero */}
-      <section className="relative pt-32 pb-20 px-4 overflow-hidden">
-        <div className="absolute top-20 left-1/4 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute top-40 right-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl pointer-events-none" />
+      {/* PRODUCTS GRID */}
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {products.map((product) => (
+          <ProductCard 
+            key={product.id} 
+            product={product} 
+            onPreOrder={handlePreOrder} 
+          />
+        ))}
+      </div>
 
-        <div className="max-w-4xl mx-auto text-center relative z-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-700 text-xs text-indigo-400 mb-6 font-medium">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
-                </span>
-                Early Access Now Open
-            </div>
-            <h1 className="text-5xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 tracking-tight mb-6">
-                Digital Assets to <br/> Scale Your Startup.
-            </h1>
-            <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-                Premium resources for creators, developers, and founders. <br className="hidden md:block" />
-                Grab free samples instantly or pre-order exclusive bundles.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <a 
-                    href="#products" 
-                    className="px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full font-bold transition-all shadow-lg shadow-indigo-500/25 flex items-center gap-2"
-                >
-                    Explore Resources
-                    <ChevronRight size={18} />
-                </a>
-                <button className="px-8 py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-full font-bold transition-all border border-slate-700">
-                    How it works
-                </button>
-            </div>
-        </div>
-      </section>
-
-      {/* Products */}
-      <section id="products" className="py-20 px-4 max-w-7xl mx-auto">
-        <div className="flex flex-wrap justify-center gap-2 mb-12">
-            {categories.map((cat) => (
-                <button
-                    key={cat}
-                    onClick={() => setActiveTab(cat)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-                        activeTab === cat 
-                        ? 'bg-white text-slate-900 shadow-lg scale-105' 
-                        : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border border-slate-800'
-                    }`}
-                >
-                    {cat}
-                </button>
-            ))}
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredProducts.map((product) => (
-                <ProductCard 
-                    key={product.id} 
-                    product={product} 
-                    onPreOrder={handlePreOrder}
-                />
-            ))}
-        </div>
-        
-        {filteredProducts.length === 0 && (
-            <div className="text-center py-20 text-slate-500">
-                <Layers size={48} className="mx-auto mb-4 opacity-50" />
-                <p>No products found in this category yet.</p>
-            </div>
-        )}
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-slate-800 bg-slate-950 py-12 px-4">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="flex items-center gap-2 font-bold text-white">
-                <Rocket size={18} /> DigitCastle
-            </div>
-            <p className="text-slate-500 text-sm">
-                &copy; {new Date().getFullYear()} Digital Startup Inc. All rights reserved.
-            </p>
+      {/* EMAIL MODAL */}
+      {isModalOpen && selectedProduct && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-8 max-w-md w-full shadow-2xl relative">
             
-            {/* 2. Updated Social Links */}
-            <div className="flex gap-4">
-                <a href="https://x.com/digitcastle" target="_blank" className="text-slate-400 hover:text-indigo-400 transition-colors">
-                    <Twitter size={20} />
-                </a>
-                
-                {/* WhatsApp (MessageCircle) */}
-                <a href="https://whatsapp.com/channel/0029Vb6q8W7FcowANESP4t1a" target="_blank" className="text-slate-400 hover:text-green-400 transition-colors">
-                    <MessageCircle size={20} />
-                </a>
-                
-                {/* Instagram */}
-                <a href="https://www.instagram.com/digitx7?igsh=MWFyZzVpNXo5MjV5cQ==" target="_blank" className="text-slate-400 hover:text-pink-400 transition-colors">
-                    <Instagram size={20} />
-                </a>
-            </div>
-        </div>
-      </footer>
+            {/* Close Button */}
+            <button 
+              onClick={() => setIsModalOpen(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white"
+            >
+              ✕
+            </button>
 
-      <EmailModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        product={selectedProduct}
-      />
-    </div>
+            <h2 className="text-2xl font-bold mb-2">Get "{selectedProduct.title}"</h2>
+            <p className="text-slate-400 mb-6">Enter your email and we will send the download link instantly.</p>
+
+            {status === 'success' ? (
+              <div className="bg-emerald-500/10 text-emerald-400 p-4 rounded-lg text-center font-medium border border-emerald-500/20">
+                ✅ Email Sent! Check your inbox.
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <input 
+                  type="email" 
+                  placeholder="name@example.com" 
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                />
+                
+                {status === 'error' && (
+                  <p className="text-red-400 text-sm">Something went wrong. Please try again.</p>
+                )}
+
+                <button 
+                  type="submit" 
+                  disabled={status === 'loading'}
+                  className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {status === 'loading' ? 'Sending...' : 'Send Me The Link'}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+    </main>
   );
 }
