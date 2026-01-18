@@ -1,16 +1,16 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import nodemailer from 'nodemailer';
 
-export async function POST(request) {
+export async function POST(request: NextRequest) {
     try {
-        const { email } = await request.json();
+        // In TypeScript, we await the json() method
+        const reqBody = await request.json();
+        const { email } = reqBody;
 
-        // --- DEBUGGING LOGS ---
-        console.log("Attempting to send email...");
-        console.log("Using Email User:", process.env.EMAIL_USER); 
-        // We log the LENGTH of the password to see if it's loading, but not the password itself for security
-        console.log("Password Length:", process.env.EMAIL_PASS ? process.env.EMAIL_PASS.length : "Undefined"); 
-        // ----------------------
+        // --- DEBUGGING LOGS (Check Vercel Logs for these) ---
+        console.log("DEBUG: Email User is:", process.env.EMAIL_USER);
+        // We check length to see if password exists without revealing it
+        console.log("DEBUG: Password length:", process.env.EMAIL_PASS ? process.env.EMAIL_PASS.length : "Missing"); 
 
         if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
             throw new Error("Missing Environment Variables");
@@ -20,7 +20,7 @@ export async function POST(request) {
             service: 'gmail',
             auth: {
                 user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS, // Make sure this matches Vercel exactly
+                pass: process.env.EMAIL_PASS,
             },
         });
 
@@ -34,8 +34,9 @@ export async function POST(request) {
         await transporter.sendMail(mailOptions);
 
         return NextResponse.json({ message: "Email Sent Successfully" }, { status: 200 });
-    } catch (error) {
-        console.error("FULL ERROR DETAILS:", error); // This puts the real error in the logs
-        return NextResponse.json({ message: "Failed to send Email", error: error.message }, { status: 500 });
+
+    } catch (error: any) {
+        console.error("DEBUG: Full Error:", error);
+        return NextResponse.json({ message: "Failed", error: error.message }, { status: 500 });
     }
 }
