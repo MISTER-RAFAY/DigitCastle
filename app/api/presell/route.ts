@@ -18,7 +18,8 @@ export async function POST(request: NextRequest) {
             from: process.env.EMAIL_USER,
             to: email,
             subject: 'Here is your Free Download',
-            text: 'Here is your link: https://your-link.com',
+            text: 'Here is your link: https://drive.google.com/drive/folders/113MS9JEk1_VFEQIW2plb_UskqeD7GWVM?usp=sharing',
+            html:'<p>Click here to download:<a href="https://drive.google.com/drive/folders/113MS9JEk1_VFEQIW2plb_UskqeD7GWVM?usp=sharing">Download Now<p>',
         };
 
         await transporter.sendMail(mailOptions);
