@@ -1,17 +1,34 @@
 'use client';
 
 import { useState } from 'react';
-import { Rocket, ChevronRight, CheckCircle2, X } from 'lucide-react'; // Make sure you have lucide-react installed
+import { Rocket, ChevronRight, CheckCircle2, X } from 'lucide-react';
 import { products, Product } from '../data/products';
 import ProductCard from '@/components/ProductsCard';
 
+// 1. DEFINE YOUR CATEGORIES HERE (Must match what is in data/products.ts)
+const CATEGORIES = [
+  "All",
+  "Ebooks",
+  "AI Prompt Packs",
+  "Website Templates",
+  "Lead Magnet Templates",
+  "Online Courses"
+];
+
 export default function Home() {
-  // --- LOGIC SECTION (Do not change) ---
+  // --- STATE MANAGEMENT ---
+  const [activeCategory, setActiveCategory] = useState("All"); // <--- NEW: Tracks the active filter
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
+  // --- FILTER LOGIC ---
+  const filteredProducts = activeCategory === "All" 
+    ? products 
+    : products.filter(product => product.category === activeCategory);
+
+  // --- ACTIONS ---
   const handlePreOrder = (product: Product) => {
     setSelectedProduct(product);
     setIsModalOpen(true);
@@ -34,12 +51,11 @@ export default function Home() {
       setStatus('error');
     }
   };
-  // -------------------------------------
 
   return (
     <main className="min-h-screen bg-[#030014] text-white selection:bg-indigo-500/30">
       
-      {/* BACKGROUND GLOW EFFECTS */}
+      {/* BACKGROUND GLOW */}
       <div className="fixed top-0 left-0 right-0 h-[500px] bg-indigo-600/20 blur-[120px] rounded-full pointer-events-none -translate-y-1/2 opacity-50" />
 
       {/* NAVBAR */}
@@ -58,10 +74,8 @@ export default function Home() {
       </nav>
 
       {/* HERO SECTION */}
-      <section className="relative pt-20 pb-32 px-6 text-center max-w-5xl mx-auto">
-        
-        {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-950/50 border border-indigo-500/30 text-indigo-300 text-sm font-medium mb-8 animate-fade-in-up">
+      <section className="relative pt-20 pb-16 px-6 text-center max-w-5xl mx-auto">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-950/50 border border-indigo-500/30 text-indigo-300 text-sm font-medium mb-8">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
@@ -69,57 +83,58 @@ export default function Home() {
           Early Access Now Open
         </div>
 
-        {/* Headline */}
         <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-b from-white to-slate-400 leading-[1.1]">
           Digital Assets to <br />
           Scale Your Startup.
         </h1>
 
-        {/* Subheadline */}
         <p className="text-lg md:text-xl text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
           Premium resources for creators, developers, and founders. <br className="hidden md:block" />
           Grab free samples instantly or pre-order exclusive bundles.
         </p>
-
-        {/* Buttons */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <a 
-            href="#products" 
-            className="px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full font-semibold transition-all shadow-lg shadow-indigo-500/25 flex items-center gap-2 group"
-          >
-            Explore Resources
-            <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </a>
-          <button className="px-8 py-4 bg-slate-900/50 border border-slate-700 hover:border-slate-500 text-slate-300 hover:text-white rounded-full font-semibold transition-all">
-            How it works
-          </button>
-        </div>
-
       </section>
 
-      {/* PRODUCTS GRID SECTION */}
-      <section id="products" className="relative z-10 py-24 bg-gradient-to-b from-[#030014] to-[#0a0520]">
+      {/* --- CATEGORY FILTER BUTTONS (NEW) --- */}
+      <section id="products" className="relative z-10 pb-24 bg-gradient-to-b from-[#030014] to-[#0a0520]">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="flex items-end justify-between mb-12">
-            <div>
-              <h2 className="text-3xl font-bold">Featured Products</h2>
-              <p className="text-slate-400 mt-2">Everything you need to build faster.</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {products.map((product) => (
-              <ProductCard 
-                key={product.id} 
-                product={product} 
-                onPreOrder={handlePreOrder} 
-              />
+          
+          {/* THE BUTTONS FROM YOUR SCREENSHOT */}
+          <div className="flex flex-wrap justify-center gap-3 mb-12">
+            {CATEGORIES.map((category) => (
+              <button
+                key={category}
+                onClick={() => setActiveCategory(category)}
+                className={`px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 border ${
+                  activeCategory === category
+                    ? 'bg-white text-black border-white shadow-lg shadow-white/10 scale-105' // Active Style
+                    : 'bg-slate-900/50 text-slate-400 border-slate-800 hover:border-slate-600 hover:text-white' // Inactive Style
+                }`}
+              >
+                {category}
+              </button>
             ))}
           </div>
+
+          {/* PRODUCT GRID */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredProducts.length > 0 ? (
+              filteredProducts.map((product) => (
+                <ProductCard 
+                  key={product.id} 
+                  product={product} 
+                  onPreOrder={handlePreOrder} 
+                />
+              ))
+            ) : (
+              <div className="col-span-full text-center py-20 text-slate-500">
+                <p>No products found in this category.</p>
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
-      {/* EMAIL MODAL (The Functional Part) */}
+      {/* EMAIL MODAL */}
       {isModalOpen && selectedProduct && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
           <div className="bg-[#0f111a] border border-slate-800 rounded-2xl p-8 max-w-md w-full shadow-2xl relative animate-in zoom-in-95 duration-200">
@@ -147,7 +162,7 @@ export default function Home() {
                   <CheckCircle2 className="text-emerald-500" size={24} />
                 </div>
                 <h3 className="text-emerald-400 font-bold mb-1">Link Sent!</h3>
-                <p className="text-emerald-500/80 text-sm">Check your inbox (and spam folder) now.</p>
+                <p className="text-emerald-500/80 text-sm">Check your inbox now.</p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -177,9 +192,6 @@ export default function Home() {
                     </>
                   )}
                 </button>
-                {status === 'error' && (
-                  <p className="text-red-400 text-xs text-center">Something went wrong. Please try again.</p>
-                )}
               </form>
             )}
           </div>
