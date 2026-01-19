@@ -5,7 +5,7 @@ import { Rocket, ChevronRight, CheckCircle2, X } from 'lucide-react';
 import { products, Product } from '../data/products';
 import ProductCard from '@/components/ProductsCard';
 
-// 1. DEFINE YOUR CATEGORIES HERE (Must match what is in data/products.ts)
+// Categories matching your data
 const CATEGORIES = [
   "All",
   "Ebooks",
@@ -16,8 +16,8 @@ const CATEGORIES = [
 ];
 
 export default function Home() {
-  // --- STATE MANAGEMENT ---
-  const [activeCategory, setActiveCategory] = useState("All"); // <--- NEW: Tracks the active filter
+  // --- STATE ---
+  const [activeCategory, setActiveCategory] = useState("All");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [email, setEmail] = useState('');
@@ -94,11 +94,11 @@ export default function Home() {
         </p>
       </section>
 
-      {/* --- CATEGORY FILTER BUTTONS (NEW) --- */}
+      {/* PRODUCTS & FILTERS */}
       <section id="products" className="relative z-10 pb-24 bg-gradient-to-b from-[#030014] to-[#0a0520]">
         <div className="max-w-7xl mx-auto px-6">
           
-          {/* THE BUTTONS FROM YOUR SCREENSHOT */}
+          {/* CATEGORY BUTTONS */}
           <div className="flex flex-wrap justify-center gap-3 mb-12">
             {CATEGORIES.map((category) => (
               <button
@@ -106,8 +106,8 @@ export default function Home() {
                 onClick={() => setActiveCategory(category)}
                 className={`px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 border ${
                   activeCategory === category
-                    ? 'bg-white text-black border-white shadow-lg shadow-white/10 scale-105' // Active Style
-                    : 'bg-slate-900/50 text-slate-400 border-slate-800 hover:border-slate-600 hover:text-white' // Inactive Style
+                    ? 'bg-white text-black border-white shadow-lg shadow-white/10 scale-105'
+                    : 'bg-slate-900/50 text-slate-400 border-slate-800 hover:border-slate-600 hover:text-white'
                 }`}
               >
                 {category}
@@ -115,7 +115,7 @@ export default function Home() {
             ))}
           </div>
 
-          {/* PRODUCT GRID */}
+          {/* GRID */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredProducts.length > 0 ? (
               filteredProducts.map((product) => (
@@ -134,7 +134,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* EMAIL MODAL */}
+      {/* EMAIL MODAL (UPDATED LOGIC) */}
       {isModalOpen && selectedProduct && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
           <div className="bg-[#0f111a] border border-slate-800 rounded-2xl p-8 max-w-md w-full shadow-2xl relative animate-in zoom-in-95 duration-200">
@@ -150,9 +150,17 @@ export default function Home() {
               <div className="w-12 h-12 bg-indigo-500/10 rounded-xl flex items-center justify-center mb-4">
                 <Rocket className="text-indigo-500" size={24} />
               </div>
-              <h2 className="text-2xl font-bold">Get "{selectedProduct.title}"</h2>
+
+              {/* DYNAMIC TITLE */}
+              <h2 className="text-2xl font-bold">
+                {selectedProduct.isFree ? `Get "${selectedProduct.title}"` : `Book "${selectedProduct.title}"`}
+              </h2>
+              
+              {/* DYNAMIC DESCRIPTION */}
               <p className="text-slate-400 mt-2 text-sm">
-                Enter your best email address and we will send the download link instantly.
+                {selectedProduct.isFree 
+                    ? "Enter your best email address and we will send the download link instantly."
+                    : "Enter your email to reserve your spot. We will notify you with details."}
               </p>
             </div>
 
@@ -161,7 +169,10 @@ export default function Home() {
                 <div className="w-12 h-12 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
                   <CheckCircle2 className="text-emerald-500" size={24} />
                 </div>
-                <h3 className="text-emerald-400 font-bold mb-1">Link Sent!</h3>
+                {/* DYNAMIC SUCCESS MESSAGE */}
+                <h3 className="text-emerald-400 font-bold mb-1">
+                   {selectedProduct.isFree ? "Link Sent!" : "Spot Reserved!"}
+                </h3>
                 <p className="text-emerald-500/80 text-sm">Check your inbox now.</p>
               </div>
             ) : (
@@ -187,11 +198,15 @@ export default function Home() {
                     <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (
                     <>
-                      Send Me The Link
+                      {/* DYNAMIC BUTTON */}
+                      {selectedProduct.isFree ? "Send Me The Link" : "Book My Spot"}
                       <ChevronRight size={16} />
                     </>
                   )}
                 </button>
+                {status === 'error' && (
+                  <p className="text-red-400 text-xs text-center">Something went wrong. Please try again.</p>
+                )}
               </form>
             )}
           </div>

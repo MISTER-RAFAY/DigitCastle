@@ -1,26 +1,22 @@
 import { NextResponse, NextRequest } from 'next/server';
 import nodemailer from 'nodemailer';
 
-// 1. DEFINE YOUR PRODUCTS HERE
-const PRODUCT_LINKS: any = {
-    'eb-1': 'https://drive.google.com/file/d/1uvCN3fvj-wsVymfr-PlKLuU4ZBgpLaFH/view?usp=sharing',
-    'oc-2': 'https://drive.google.com/file/d/15VqhAe-HiB5mTvR0W-xYl9fG77F4EGTU/view?usp=sharing',
-    'ai-2': 'https://drive.google.com/file/d/17lsMFY3_AF6kaC5u5FMhUN0NIATMqdwq/view?usp=drive_link',
-    'wt-2': 'https://drive.google.com/file/d/1mA9HN8u5gAjYVYUiVAfayXwQgrxO0tuy/view?usp=drive_link',
-    'lm-1': 'https://drive.google.com/file/d/1C7zO4E2LQVgEMUObM6jhkK_OWoHk9AkR/view?usp=sharing',
+// ONLY PUT YOUR FREE PRODUCTS HERE
+const FREE_PRODUCT_LINKS: Record<string, string> = {
+    'ebook': 'https://drive.google.com/file/d/YOUR_REAL_EBOOK_LINK',
+    'video': 'https://drive.google.com/file/d/YOUR_REAL_VIDEO_LINK',
+    'checklist': 'https://drive.google.com/file/d/YOUR_REAL_CHECKLIST_LINK',
+    'audio': 'https://drive.google.com/file/d/YOUR_REAL_AUDIO_LINK',
+    'template': 'https://drive.google.com/file/d/YOUR_REAL_TEMPLATE_LINK',
 };
 
 export async function POST(request: NextRequest) {
     try {
         const reqBody = await request.json();
-        const { email, product } = reqBody; // We now get 'product' from the frontend
+        const { email, product } = reqBody;
 
-        // 2. FIND THE CORRECT LINK
-        // If they didn't send a product name, default to the first one, or a generic page
-        const downloadLink = PRODUCT_LINKS[product] || 'https://your-website.com';
-        
-        // Optional: Customize the subject line based on product
-        const subjectLine = `Here is your ${product || 'Free Download'}`;
+        // CHECK: Is this a free product with a link?
+        const downloadLink = FREE_PRODUCT_LINKS[product];
 
         const transporter = nodemailer.createTransport({
             service: 'gmail',
@@ -30,16 +26,40 @@ export async function POST(request: NextRequest) {
             },
         });
 
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: subjectLine,
-            html: `
-                <h1>Here is your requested file</h1>
-                <p>Click the button below to download:</p>
-                <a href="${downloadLink}" style="padding: 10px 20px; background-color: green; color: white; text-decoration: none;">Download Now</a>
-            `,
-        };
+        let mailOptions;
+
+        if (downloadLink) {
+            // --- SCENARIO A: FREE PRODUCT (Send Link) ---
+            mailOptions = {
+                from: process.env.EMAIL_USER,
+                to: email,
+                subject: 'Here is your Free Download',
+                html: `
+                    <div style="font-family: sans-serif; padding: 20px;">
+                        <h2>Your download is ready!</h2>
+                        <p>Click the button below to get your file:</p>
+                        <a href="${downloadLink}" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Download Now</a>
+                    </div>
+                `,
+            };
+        } else {
+            // --- SCENARIO B: PREMIUM PRODUCT (Book a Spot) ---
+            // If the product ID is not in the FREE list, we assume it's a Booking
+            mailOptions = {
+                from: process.env.EMAIL_USER,
+                to: email,
+                subject: 'Spot Reserved: Confirmation',
+                html: `
+                    <div style="font-family: sans-serif; padding: 20px;">
+                        <h2>You are on the list!</h2>
+                        <p>Thank you for booking a spot for this exclusive product.</p>
+                        <p>We have received your interest and will contact you shortly with the next steps.</p>
+                        <br/>
+                        <p><strong>Status:</strong> Confirmed ✅</p>
+                    </div>
+                `,
+            };
+        }
 
         await transporter.sendMail(mailOptions);
 
