@@ -3,11 +3,11 @@ import nodemailer from 'nodemailer';
 
 // 1. DEFINE YOUR PRODUCTS HERE
 const PRODUCT_LINKS: any = {
-    'ebook': 'https://drive.google.com/file/d/1uvCN3fvj-wsVymfr-PlKLuU4ZBgpLaFH/view?usp=sharing',
-    'video': 'https://drive.google.com/file/d/15VqhAe-HiB5mTvR0W-xYl9fG77F4EGTU/view?usp=sharing',
-    'AI Prompts Pack': 'https://drive.google.com/file/d/17lsMFY3_AF6kaC5u5FMhUN0NIATMqdwq/view?usp=drive_link',
-    'website template': 'https://drive.google.com/file/d/1mA9HN8u5gAjYVYUiVAfayXwQgrxO0tuy/view?usp=drive_link',
-    'Lead Magnet template': 'https://drive.google.com/file/d/1C7zO4E2LQVgEMUObM6jhkK_OWoHk9AkR/view?usp=sharing',
+    'eb-1': 'https://drive.google.com/file/d/1uvCN3fvj-wsVymfr-PlKLuU4ZBgpLaFH/view?usp=sharing',
+    'oc-2': 'https://drive.google.com/file/d/15VqhAe-HiB5mTvR0W-xYl9fG77F4EGTU/view?usp=sharing',
+    'ai-2': 'https://drive.google.com/file/d/17lsMFY3_AF6kaC5u5FMhUN0NIATMqdwq/view?usp=drive_link',
+    'wt-2': 'https://drive.google.com/file/d/1mA9HN8u5gAjYVYUiVAfayXwQgrxO0tuy/view?usp=drive_link',
+    'lm-1': 'https://drive.google.com/file/d/1C7zO4E2LQVgEMUObM6jhkK_OWoHk9AkR/view?usp=sharing',
 };
 
 export async function POST(request: NextRequest) {
