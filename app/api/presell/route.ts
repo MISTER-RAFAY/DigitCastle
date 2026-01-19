@@ -3,11 +3,11 @@ import nodemailer from 'nodemailer';
 
 // YOUR FREE PRODUCT LINKS
 const FREE_PRODUCT_LINKS: Record<string, string> = {
-    'ebook': 'https://drive.google.com/file/d/YOUR_REAL_EBOOK_LINK',
-    'video': 'https://drive.google.com/file/d/YOUR_REAL_VIDEO_LINK',
-    'checklist': 'https://drive.google.com/file/d/YOUR_REAL_CHECKLIST_LINK',
-    'audio': 'https://drive.google.com/file/d/YOUR_REAL_AUDIO_LINK',
-    'template': 'https://drive.google.com/file/d/YOUR_REAL_TEMPLATE_LINK',
+    'eb-1': 'https://drive.google.com/file/d/YOUR_REAL_EBOOK_LINK',
+    'oc-2': 'https://drive.google.com/file/d/YOUR_REAL_VIDEO_LINK',
+    'ai-2': 'https://drive.google.com/file/d/YOUR_REAL_CHECKLIST_LINK',
+    'lm-1': 'https://drive.google.com/file/d/YOUR_REAL_AUDIO_LINK',
+    'wt-2': 'https://drive.google.com/file/d/YOUR_REAL_TEMPLATE_LINK',
 };
 
 export async function POST(request: NextRequest) {
